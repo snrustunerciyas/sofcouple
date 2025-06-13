@@ -50,7 +50,8 @@ def pdf_olustur(kategori_df, detay_df):
         font_path = os.path.join("fonts", "DejaVuSans.ttf")
         pdf.add_font('DejaVu', '', font_path, uni=True)
         pdf.set_font('DejaVu', '', 12)
-    except:
+    except Exception as e:
+        st.error(f"Font yüklenemedi: {e}")
         pdf.set_font('Arial', '', 12)
 
     pdf.cell(200, 10, txt="Project Velvet - Rapor", ln=True, align='C')
@@ -58,12 +59,18 @@ def pdf_olustur(kategori_df, detay_df):
     pdf.cell(200, 10, txt="Kategori Ortalamaları", ln=True)
 
     for _, row in kategori_df.sort_values(by="Ortalama", ascending=False).iterrows():
-        pdf.cell(200, 8, txt=f"{row['Kategori']}: {row['Ortalama']}", ln=True)
+        kategori = row['Kategori']
+        ortalama = row['Ortalama']
+        pdf.cell(200, 8, txt=f"{kategori}: {ortalama}", ln=True)
 
     pdf.ln(5)
     pdf.cell(200, 10, txt="Detaylı Soru Ortalamaları", ln=True)
+
     for _, row in detay_df.sort_values(by="Ortalama", ascending=False).iterrows():
-        pdf.multi_cell(0, 8, txt=f"{row['Soru']} ({row['Kategori']}) → {row['Ortalama']}")
+        soru = row['Soru']
+        kategori = row['Kategori']
+        ortalama = row['Ortalama']
+        pdf.multi_cell(0, 8, txt=f"{soru} ({kategori}) → {ortalama}")
 
     buffer = io.BytesIO()
     pdf.output(buffer)
