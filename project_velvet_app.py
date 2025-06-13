@@ -45,27 +45,27 @@ def radar_chart(df):
 def pdf_olustur(kategori_df, detay_df):
     pdf = FPDF()
     pdf.add_page()
-try:
-    font_path = os.path.join("fonts", "DejaVuSans.ttf")
-    pdf.add_font('DejaVu', '', font_path, uni=True)
-    pdf.set_font('DejaVu', '', 12)
-except:
-    pdf.set_font('Arial', '', 12)
+    try:
+        font_path = os.path.join("fonts", "DejaVuSans.ttf")
+        pdf.add_font('DejaVu', '', font_path, uni=True)
+        pdf.set_font('DejaVu', '', 12)
+    except:
+        pdf.set_font('Arial', '', 12)
 
-    pdf.add_font('DejaVu', '', font_path, uni=True)
-    pdf.set_font('DejaVu', '', 12)
     pdf.cell(200, 10, txt="Project Velvet - Rapor", ln=True, align='C')
     pdf.ln(10)
     pdf.cell(200, 10, txt="Kategori Ortalamaları", ln=True)
+
     for _, row in kategori_df.sort_values(by="Ortalama", ascending=False).iterrows():
         pdf.cell(200, 8, txt=f"{row['Kategori']}: {row['Ortalama']}", ln=True)
+
     pdf.ln(5)
     pdf.cell(200, 10, txt="Detaylı Soru Ortalamaları", ln=True)
     for _, row in detay_df.sort_values(by="Ortalama", ascending=False).iterrows():
         pdf.multi_cell(0, 8, txt=f"{row['Soru']} ({row['Kategori']}) → {row['Ortalama']}")
+
     buffer = io.BytesIO()
-    pdf_bytes = pdf.output(dest='S').encode('latin1')
-    buffer.write(pdf_bytes)
+    pdf.output(buffer)
     buffer.seek(0)
     return buffer
 
