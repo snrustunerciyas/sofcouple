@@ -70,7 +70,7 @@ def pdf_olustur(kategori_df, detay_df):
         soru = row['Soru']
         kategori = row['Kategori']
         ortalama = row['Ortalama']
-        pdf.multi_cell(0, 8, txt=f"{soru} ({kategori}) → {ortalama}")
+        pdf.multi_cell(0, 8, txt=f"{soru} ({kategori}): {ortalama}")
 
     buffer = io.BytesIO()
     pdf.output(buffer)
