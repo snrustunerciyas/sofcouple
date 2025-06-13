@@ -7,7 +7,6 @@ import string
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
-from fpdf import FPDF
 from math import pi
 from sorular import sorular
 
@@ -22,11 +21,11 @@ def rastgele_oturum_kodu(uzunluk=6):
 
 def renk_kodla(v):
     if v < 3.5:
-        return 'background-color: #ffcccc'  # kırmızı
+        return 'background-color: #ffcccc'
     elif v < 5:
-        return 'background-color: #fff3cd'  # sarı
+        return 'background-color: #fff3cd'
     else:
-        return 'background-color: #d4edda'  # yeşil
+        return 'background-color: #d4edda'
 
 def radar_chart(df):
     categories = list(df["Kategori"])
@@ -42,38 +41,11 @@ def radar_chart(df):
     ax.fill(angles, values, alpha=0.3)
     st.pyplot(fig)
 
-def pdf_olustur(kategori_df, detay_df):
-    pdf = FPDF()
-    pdf.add_page()
-
-    try:
-        font_path = os.path.join("fonts", "DejaVuSans.ttf")
-        pdf.add_font('DejaVu', '', font_path, uni=True)
-        pdf.set_font('DejaVu', '', 12)
-    except Exception as e:
-        st.error(f"Font yüklenemedi: {e}")
-        pdf.set_font('Arial', '', 12)
-
-    pdf.cell(200, 10, txt="Project Velvet - Rapor", ln=True, align='C')
-    pdf.ln(10)
-    pdf.cell(200, 10, txt="Kategori Ortalamaları", ln=True)
-
-    for _, row in kategori_df.sort_values(by="Ortalama", ascending=False).iterrows():
-        kategori = row['Kategori']
-        ortalama = row['Ortalama']
-        pdf.cell(200, 8, txt=f"{kategori}: {ortalama}", ln=True)
-
-    pdf.ln(5)
-    pdf.cell(200, 10, txt="Detaylı Soru Ortalamaları", ln=True)
-
-    for _, row in detay_df.sort_values(by="Ortalama", ascending=False).iterrows():
-        soru = row['Soru']
-        kategori = row['Kategori']
-        ortalama = row['Ortalama']
-        pdf.multi_cell(0, 8, txt=f"{soru} ({kategori}): {ortalama}")
-
+def excel_olustur(kategori_df, detay_df):
     buffer = io.BytesIO()
-    pdf.output(buffer)
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        kategori_df.to_excel(writer, index=False, sheet_name='Kategoriler')
+        detay_df.to_excel(writer, index=False, sheet_name='Detaylar')
     buffer.seek(0)
     return buffer
 
@@ -88,7 +60,6 @@ def onerileri_getir(detay_df):
     if detay_sari:
         oneriler.append(("Denemeye Değer", random.choice(detay_sari)))
     return oneriler
-
 
 # ========== OTURUM GİRİŞİ ==========
 st.header("📝 Anket Katılımı")
@@ -186,7 +157,12 @@ if "session_id" in st.session_state:
             st.subheader("📋 Detaylı Sorular")
             st.dataframe(detay_df.style.applymap(renk_kodla, subset=["Ortalama"]))
 
-            st.download_button("⬇️ PDF Raporu İndir", data=pdf_olustur(kategori_df, detay_df), file_name="rapor.pdf")
+            st.download_button(
+                "⬇️ Excel Raporu İndir",
+                data=excel_olustur(kategori_df, detay_df),
+                file_name="rapor.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
             if "oneriler" not in st.session_state:
                 st.session_state["oneriler"] = []
