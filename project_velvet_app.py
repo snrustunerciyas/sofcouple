@@ -45,6 +45,7 @@ def radar_chart(df):
 def pdf_olustur(kategori_df, detay_df):
     pdf = FPDF()
     pdf.add_page()
+
     try:
         font_path = os.path.join("fonts", "DejaVuSans.ttf")
         pdf.add_font('DejaVu', '', font_path, uni=True)
